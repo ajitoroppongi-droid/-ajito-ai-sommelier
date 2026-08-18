@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#7b1f2a" />
+  <title>Ajito AI ソムリエ</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <img src="assets/ajito-logo.png" alt="東京バル Ajito Roppongi" class="logo" />
+      <div class="eyebrow">AJITO ROPPONGI</div>
+      <h1>Ajito <span>AI</span> ソムリエ</h1>
+      <p>料理と好みを選ぶだけ。<br>あなたに合うワインを約30秒でご提案します。</p>
+      <div class="hero-badges">
+        <span>🍷 かんたん診断</span><span>🍽 料理ペアリング</span><span>✨ 新しい1本</span>
+      </div>
+      <button class="primary" data-start>診断をはじめる</button>
+      <p class="prototype-note">試作版｜Ajitoのワインリストをもとにした簡易診断です</p>
+    </section>
+
+    <section id="quiz" class="quiz hidden" aria-live="polite">
+      <div class="progress-wrap">
+        <div class="progress-label"><span id="stepLabel">STEP 1 / 4</span><span id="progressPct">25%</span></div>
+        <div class="progress"><div id="progressBar"></div></div>
+      </div>
+
+      <div class="step" data-step="1">
+        <div class="step-kicker">まずは気分から</div>
+        <h2>今日は誰と楽しみますか？</h2>
+        <div class="choices two-col" data-field="occasion">
+          <button data-value="date">❤️<strong>デート</strong><small>ちょっと特別な1本</small></button>
+          <button data-value="celebration">🥂<strong>記念日</strong><small>華やかに乾杯</small></button>
+          <button data-value="friends">👭<strong>友人・女子会</strong><small>楽しく飲みたい</small></button>
+          <button data-value="solo">🍷<strong>ひとり飲み</strong><small>じっくり味わう</small></button>
+        </div>
+      </div>
+
+      <div class="step hidden" data-step="2">
+        <div class="step-kicker">料理との相性</div>
+        <h2>いま一緒に食べたい料理は？</h2>
+        <div class="choices dish-list" data-field="dish">
+          <button data-value="caprese"><span class="dish-emoji">🍅</span><strong>まるごと1個のホワイトカプレーゼ</strong><small>モッツァレラ × トマト</small></button>
+          <button data-value="steak"><span class="dish-emoji">🥩</span><strong>柔らか牛ハラミステーキ</strong><small>赤身肉 × トリュフソース</small></button>
+          <button data-value="stew"><span class="dish-emoji">🍳</span><strong>牛スジシチュー</strong><small>焦がしチーズ × 半熟卵</small></button>
+          <button data-value="omelette"><span class="dish-emoji">🦀</span><strong>イクラとカニの贅沢スフレオムレツ</strong><small>濃厚クリーム × 海の幸</small></button>
+          <button data-value="pasta"><span class="dish-emoji">🍝</span><strong>ブラックペペロンチーノ</strong><small>チーズ × ブラックペッパー</small></button>
+          <button data-value="carpaccio"><span class="dish-emoji">🐟</span><strong>真鯛のカルパッチョ</strong><small>夏野菜 × ガスパチョ</small></button>
+        </div>
+      </div>
+
+      <div class="step hidden" data-step="3">
+        <div class="step-kicker">味の好み</div>
+        <h2>どんなワインが好きですか？</h2>
+        <div class="choices two-col" data-field="taste">
+          <button data-value="fresh">🌿<strong>すっきり</strong><small>爽やか・軽やか</small></button>
+          <button data-value="fruity">🍓<strong>フルーティー</strong><small>果実味たっぷり</small></button>
+          <button data-value="rich">🍫<strong>濃厚</strong><small>コク・ボリューム</small></button>
+          <button data-value="spicy">🌶️<strong>スパイシー</strong><small>香り・余韻を楽しむ</small></button>
+        </div>
+      </div>
+
+      <div class="step hidden" data-step="4">
+        <div class="step-kicker">最後に価格帯</div>
+        <h2>ボトルのご予算は？</h2>
+        <div class="choices budget-list" data-field="budget">
+          <button data-value="3000"><strong>〜3,980円くらい</strong><small>気軽に楽しむ</small></button>
+          <button data-value="5000"><strong>4,000〜5,980円くらい</strong><small>ちょっといい1本</small></button>
+          <button data-value="8000"><strong>6,000〜8,000円くらい</strong><small>特別感のある1本</small></button>
+          <button data-value="premium"><strong>価格よりおすすめ重視</strong><small>ソムリエにおまかせ</small></button>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button id="backBtn" class="ghost hidden">← 戻る</button>
+      </div>
+    </section>
+
+    <section id="result" class="result hidden">
+      <div class="result-head">
+        <span class="result-badge">AI SOMMELIER PICK</span>
+        <h2>あなたへのおすすめ</h2>
+        <p id="resultIntro"></p>
+      </div>
+      <div id="wineCards" class="wine-cards"></div>
+      <div class="result-actions">
+        <button class="primary" id="retryBtn">もう一度診断する</button>
+      </div>
+      <div class="staff-note">気になるワインがあれば、この画面をスタッフにお見せください。</div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
