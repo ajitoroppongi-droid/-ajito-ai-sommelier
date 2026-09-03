@@ -1,6 +1,16 @@
 <!doctype html>
 <html lang="ja">
 <head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BJZS6HNSX1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-BJZS6HNSX1');
+</script>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#7b2430">
@@ -57,21 +67,28 @@ const foods = [{"id":"oyster","cat":"Tapas","name":"本日の生牡蠣 “フレ
 let mode=null,step=1,foodCat='Tapas'; const ans={food:null,taste:null,budget:null,winecat:null,serve:null};
 const tasteOpts=[['fresh','🌿','すっきり','爽やか・軽やか・酸がきれい'],['fruity','🍓','フルーティー','果実味をしっかり感じたい'],['rich','🍫','濃厚','コク・ボリューム・樽感'],['spicy','🌶️','スパイシー','香り・余韻・複雑さ'],['sweet','🍯','甘め','やさしい甘さ・飲みやすさ']];
 const serveOpts=[['glass','🍷','グラスで気軽に','まず1杯試してみたい'],['bottle','🍾','ボトルでじっくり','食事と合わせて楽しみたい'],['either','✨','どちらでもOK','相性を最優先で選びたい']];
+
+function trackEvent(name, params={}) {
+  try {
+    if (typeof gtag === 'function') gtag('event', name, params);
+  } catch(e) {}
+}
+
 const wineCatOpts=[['泡','🥂','スパークリング','乾杯・爽快・華やか'],['白','🥂','白ワイン','魚介・軽やか・香り'],['赤','🍷','赤ワイン','肉・コク・余韻'],['all','✨','色はおまかせ','全部から選ぶ']];
 const bottleBudget=[['3000','¥','〜3,980円','気軽に楽しみたい'],['5000','¥','4,000〜5,980円','少し良い1本'],['8000','¥','6,000〜8,980円','特別感のある1本'],['premium','✨','価格より相性重視','AIにおまかせ']];
 const glassBudget=[['700','¥','〜680円','気軽に1杯'],['900','¥','780〜880円','ちょっと良い1杯'],['premium','✨','価格より相性重視','AIにおまかせ']];
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
-function startMode(m){mode=m;step=1;Object.keys(ans).forEach(k=>ans[k]=null);renderStep();show('quiz')}
+function startMode(m){mode=m;step=1;Object.keys(ans).forEach(k=>ans[k]=null);trackEvent('ai_sommelier_start',{route:m});renderStep();show('quiz')}
 function prevStep(){if(step===1){show('home');return}step--;renderStep();window.scrollTo(0,0)}
-function restart(){mode=null;show('home')}
+function restart(){trackEvent('ai_sommelier_restart',{});mode=null;show('home')}
 function renderStep(){document.getElementById('stepText').textContent=`STEP ${step} / 4`;document.getElementById('bar').style.width=`${step/4*100}%`;if(mode==='food'){if(step===1)renderFoodPicker();if(step===2)renderSimple('今日はどう楽しみますか？','グラスかボトルかを選んでください。',serveOpts,'serve');if(step===3)renderSimple('どんなワインが好きですか？','迷ったら直感で選んでOK。',tasteOpts,'taste');if(step===4)renderBudget()}else{if(step===1)renderSimple('今日はどう楽しみますか？','グラスかボトルかを選んでください。',serveOpts,'serve');if(step===2)renderSimple('今日はどのワイン気分？','色を決めず、全部から探すこともできます。',wineCatOpts,'winecat');if(step===3)renderSimple('どんな味が好きですか？','あなたの好みに近い1杯・1本を探します。',tasteOpts,'taste');if(step===4)renderBudget()}}
 function renderBudget(){let opts=ans.serve==='glass'?glassBudget:(ans.serve==='bottle'?bottleBudget:[['premium','✨','価格はおまかせ','相性を優先します']]);renderSimple('ご予算は？','最後の質問です。',opts,'budget')}
 function renderSimple(q,h,opts,field){document.getElementById('question').innerHTML=`<h2 class="question">${q}</h2><p class="hint">${h}</p>`;document.getElementById('options').innerHTML=opts.map(o=>`<button class="opt" onclick="choose('${field}','${o[0]}')"><span class="emoji">${o[1]}</span><span><strong>${o[2]}</strong><small>${o[3]}</small></span></button>`).join('')}
 function renderFoodPicker(){const cats=[...new Set(foods.map(f=>f.cat))];if(!cats.includes(foodCat))foodCat=cats[0];document.getElementById('question').innerHTML=`<h2 class="question">何を食べますか？</h2><p class="hint">カテゴリーを選んで、料理を1品タップしてください。</p><div class="categories">${cats.map(c=>`<button class="cat ${c===foodCat?'active':''}" onclick="setFoodCat('${c}')">${c}</button>`).join('')}</div>`;renderFoodList()}
 function setFoodCat(c){foodCat=c;renderFoodPicker()}
 function renderFoodList(){const arr=foods.filter(f=>f.cat===foodCat);document.getElementById('options').innerHTML=`<div class="foodlist">${arr.map(f=>`<button class="foodbtn" onclick="chooseFood('${f.id}')"><strong>${f.name}</strong><small>${f.note}</small></button>`).join('')}</div>`}
-function chooseFood(id){ans.food=id;step=2;renderStep();window.scrollTo(0,0)}
-function choose(field,val){ans[field]=val;if(step<4){step++;renderStep();window.scrollTo(0,0)}else renderResult()}
+function chooseFood(id){ans.food=id;const f=foods.find(x=>x.id===id);trackEvent('food_selected',{food_id:id,food_name:f?f.name:id,route:mode});step=2;renderStep();window.scrollTo(0,0)}
+function choose(field,val){ans[field]=val;const eventMap={serve:'serve_selected',taste:'taste_selected',budget:'budget_selected',winecat:'wine_category_selected'};if(eventMap[field])trackEvent(eventMap[field],{value:val,route:mode});if(step<4){step++;renderStep();window.scrollTo(0,0)}else renderResult()}
 function candidates(){return ans.serve==='glass'?glassWines:(ans.serve==='bottle'?wines:[...glassWines,...wines])}
 function budgetScore(p,b,serve){if(!b||b==='premium')return 0;if(serve==='グラス'){if(b==='700')return p<=680?5:-3;if(b==='900')return p>=780&&p<=880?5:-2}if(b==='3000')return p<=3980?5:p<=4980?1:-5;if(b==='5000')return p>=3980&&p<=5980?5:p<=6980?1:-3;if(b==='8000')return p>=5980&&p<=8980?5:p>=4980?1:-3;return 0}
 function tasteScore(w,t){if(t==='fresh')return w.acid*1.5+(6-w.body)+w.bubble*.6;if(t==='fruity')return w.fruit*1.8+(w.sweet>=2?2:0);if(t==='rich')return w.body*1.8+w.oak*.8+w.fruit*.5;if(t==='spicy')return w.spice*2+w.body*.6;if(t==='sweet')return w.sweet*2.2+w.fruit*.6;return 0}
@@ -81,5 +98,18 @@ function foodReason(w,f){const p=[];if(f.tags.includes('seafood'))p.push('魚介
 function rankWines(){const f=foods.find(x=>x.id===ans.food);return candidates().map(w=>({w,score:pairScore(w,f)+tasteScore(w,ans.taste)+budgetScore(w.price,ans.budget,w.serve)})).sort((a,b)=>b.score-a.score).slice(0,3)}
 function rankByPref(){return candidates().filter(w=>ans.winecat==='all'||w.cat===ans.winecat).map(w=>({w,score:tasteScore(w,ans.taste)+budgetScore(w.price,ans.budget,w.serve)+(ans.winecat!=='all'?2:0)})).sort((a,b)=>b.score-a.score).slice(0,3)}
 function topFoodsFor(w){return foods.map(f=>({f,score:pairScore(w,f)})).sort((a,b)=>b.score-a.score).slice(0,3)}
-function renderResult(){const cards=document.getElementById('cards');if(mode==='food'){const f=foods.find(x=>x.id===ans.food),top=rankWines();document.getElementById('resultTitle').textContent='おすすめワイン TOP3';document.getElementById('resultIntro').textContent=`「${f.name}」に合わせて選びました。`;cards.innerHTML=top.map((x,i)=>`<article class="card ${i===0?'best':''}">${i===0?'<span class="bestlabel">BEST MATCH</span>':''}<div class="type">${x.w.serve} · ${x.w.cat==='泡'?'SPARKLING':x.w.cat==='白'?'WHITE WINE':'RED WINE'}</div><div class="name">${x.w.name}</div><div class="meta">${x.w.grape} / ${x.w.country}</div><div class="tags">${x.w.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div><div class="reason">${wineReason(x.w,f)}</div><div class="price">${x.w.serve==='グラス'?'Glass':'Bottle'} ¥${x.w.price.toLocaleString()}</div></article>`).join('')}else{const top=rankByPref();document.getElementById('resultTitle').textContent='あなた向けの3本';document.getElementById('resultIntro').textContent='好みと予算から選びました。各ワインに合うAjito料理もご提案します。';cards.innerHTML=top.map((x,i)=>{const pf=topFoodsFor(x.w);return `<article class="card ${i===0?'best':''}">${i===0?'<span class="bestlabel">BEST MATCH</span>':''}<div class="type">${x.w.serve} · ${x.w.cat==='泡'?'SPARKLING':x.w.cat==='白'?'WHITE WINE':'RED WINE'}</div><div class="name">${x.w.name}</div><div class="meta">${x.w.grape} / ${x.w.country}</div><div class="tags">${x.w.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div><div class="reason">${x.w.desc}</div><div class="price">${x.w.serve==='グラス'?'Glass':'Bottle'} ¥${x.w.price.toLocaleString()}</div><div class="pairfoods"><b>このワインに合う料理 TOP3</b><ul>${pf.map(y=>`<li><strong>${y.f.name}</strong><br>${foodReason(x.w,y.f)}</li>`).join('')}</ul></div></article>`}).join('')}show('result')}
+function renderResult(){const cards=document.getElementById('cards');if(mode==='food'){const f=foods.find(x=>x.id===ans.food),top=rankWines();document.getElementById('resultTitle').textContent='おすすめワイン TOP3';document.getElementById('resultIntro').textContent=`「${f.name}」に合わせて選びました。`;cards.innerHTML=top.map((x,i)=>`<article class="card ${i===0?'best':''}">${i===0?'<span class="bestlabel">BEST MATCH</span>':''}<div class="type">${x.w.serve} · ${x.w.cat==='泡'?'SPARKLING':x.w.cat==='白'?'WHITE WINE':'RED WINE'}</div><div class="name">${x.w.name}</div><div class="meta">${x.w.grape} / ${x.w.country}</div><div class="tags">${x.w.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div><div class="reason">${wineReason(x.w,f)}</div><div class="price">${x.w.serve==='グラス'?'Glass':'Bottle'} ¥${x.w.price.toLocaleString()}</div></article>`).join('')}else{const top=rankByPref();document.getElementById('resultTitle').textContent='あなた向けの3本';document.getElementById('resultIntro').textContent='好みと予算から選びました。各ワインに合うAjito料理もご提案します。';cards.innerHTML=top.map((x,i)=>{const pf=topFoodsFor(x.w);return `<article class="card ${i===0?'best':''}">${i===0?'<span class="bestlabel">BEST MATCH</span>':''}<div class="type">${x.w.serve} · ${x.w.cat==='泡'?'SPARKLING':x.w.cat==='白'?'WHITE WINE':'RED WINE'}</div><div class="name">${x.w.name}</div><div class="meta">${x.w.grape} / ${x.w.country}</div><div class="tags">${x.w.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div><div class="reason">${x.w.desc}</div><div class="price">${x.w.serve==='グラス'?'Glass':'Bottle'} ¥${x.w.price.toLocaleString()}</div><div class="pairfoods"><b>このワインに合う料理 TOP3</b><ul>${pf.map(y=>`<li><strong>${y.f.name}</strong><br>${foodReason(x.w,y.f)}</li>`).join('')}</ul></div></article>`}).join('')}
+const recommendationNames=Array.from(cards.querySelectorAll('.name')).map(el=>el.textContent.trim()).slice(0,3);
+trackEvent('ai_sommelier_complete',{
+  route:mode,
+  serve:ans.serve||'unknown',
+  taste:ans.taste||'unknown',
+  budget:ans.budget||'unknown',
+  food_id:ans.food||'',
+  wine_category:ans.winecat||'',
+  recommendation_1:recommendationNames[0]||'',
+  recommendation_2:recommendationNames[1]||'',
+  recommendation_3:recommendationNames[2]||''
+});
+show('result')}
 </script></body></html>
